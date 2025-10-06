@@ -1,0 +1,60 @@
+-לונה חואגה-
+
+General Explanation of the Code
+The code is divided into two main parts: the first part handles user management by 
+storing and verifying login credentials (username, salt, and hashed password), 
+while the second part analyzes network traffic from a PCAP file, 
+extracting data such as IP addresses, DNS queries, and HTTPrequested URLs.
+
+The user management system allows users to register and log in by creating a 
+record that includes a unique salt and a SHA256 hashed password. 
+These records are stored in a JSON file. The second part of the code 
+utilizes the dpkt library to read a PCAP file and extract relevant network 
+traffic information.
+
+-----------------------------------------------------------------------------
+User Management
+The user management functions handle registration, authentication, and storage of 
+user credentials.
+
+The function generate_salt(length=32) generates a random salt of 32 characters, 
+consisting of letters and numbers. This ensures that each user has a unique salt, 
+preventing password reuse attacks.
+The function hash_password(password, salt) takes a password and salt, 
+concatenates them, and computes their SHA256 hash using hashlib.sha256(). 
+This ensures that passwords are stored securely in a hashed format.
+
+The function save_users(users) saves user data to a users.json file.
+It opens the file in write mode ("w") and uses json.dump() to store the dictionary in 
+JSON format.
+
+The function load_users() loads user data from the JSON file. 
+If the file does not exist, it returns an empty dictionary ({}).
+
+The function register() allows users to register in the system. 
+It prompts for a username, checks if it already exists, and if not, 
+generates a salt, hashes the password, and saves the user’s details.
+
+The function login() handles user authentication. It checks if the username exists, 
+then hashes the provided password with the stored salt and compares it with the saved hash.
+If they match, the user successfully logs in; otherwise, an error message is displayed.
+---------------------------------------------------------------------------------------
+The PCAP file analysis functions use the dpkt library to read network packets and 
+extract useful data.
+
+The function get_ip_address_counts(pcap_path) reads a PCAP file and returns a dictionary 
+containing IP addresses and their occurrence counts. 
+It iterates through each packet in the file, checks if it is an Ethernet packet containing 
+an IP layer, then extracts the source (src_ip) and destination (dst_ip) addresses, 
+counting their occurrences.
+
+The function extract_url_counts_from_pcap(pcap_file) identifies HTTP requests within the 
+PCAP file and returns a dictionary of URLs with their occurrence counts. 
+It scans each packet for TCP traffic on port 80 (HTTP) and attempts to extract HTTP 
+requests using dpkt.http.Request(). If a request contains both a host header and a uri, 
+the function constructs the full URL and adds it to the dictionary. 
+
+The function get_domain_queries(pcap_path) extracts DNS queries from the PCAP file. 
+It iterates through each packet, searching for UDP packets on port 53 (DNS requests), 
+then extracts the queried domain names. It counts how many times each domain appears and 
+returns a dictionary containing the results.
